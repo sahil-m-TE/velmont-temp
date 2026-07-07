@@ -512,10 +512,10 @@ h2 { font-size: clamp(40px, 5vw, 64px); letter-spacing: .01em; }
 }
 .f-addr { font-size: 14px; font-weight: 300; line-height: 1.9; margin-bottom: 34px; }
 .f-logo-card {
-  display: inline-block; background: var(--ivory); border-radius: 16px;
-  padding: 20px 24px; box-shadow: 0 14px 36px rgba(0, 0, 0, .3);
+  display: inline-block; background: var(--ivory); border-radius: 18px;
+  padding: 24px 30px; box-shadow: 0 14px 36px rgba(0, 0, 0, .3);
 }
-.f-logo { width: 190px; display: block; }
+.f-logo { width: min(260px, 62vw); display: block; }
 .f-col { display: flex; flex-direction: column; gap: 11px; }
 .f-col a { font-size: 14px; font-weight: 300; opacity: .85; transition: opacity .2s ease, transform .2s ease; }
 .f-col a:hover { opacity: 1; transform: translateX(3px); color: var(--gold-soft); }
