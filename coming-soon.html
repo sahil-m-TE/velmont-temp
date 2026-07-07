@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coming Soon · Velmont India</title>
+  <meta name="description" content="This part of the Velmont India boutique opens with our grand launch on 10 July. Luxury You Can Live In.">
+  <link rel="icon" type="image/png" href="assets/logo-v-gold.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="cs-body">
+
+  <main class="cs-page">
+    <img class="cs-logo" src="assets/logo-v-gold.png" alt="Velmont India gold V monogram">
+    <p class="eyebrow eyebrow-gold">Velmont India · Grand Launch 10 July</p>
+    <h1>Something Beautiful<br>Is on Its Way</h1>
+    <p class="cs-copy">This part of the boutique is still being polished. The full collection opens with our grand launch, and the first pieces are already waiting for you on the launch page.</p>
+
+    <div class="cd-timer cs-timer" id="cd-timer" data-launch="2026-07-10T10:00:00+05:30">
+      <div class="cd-cell"><b id="cd-d">00</b><span>Days</span></div>
+      <i>:</i>
+      <div class="cd-cell"><b id="cd-h">00</b><span>Hours</span></div>
+      <i>:</i>
+      <div class="cd-cell"><b id="cd-m">00</b><span>Minutes</span></div>
+      <i>:</i>
+      <div class="cd-cell"><b id="cd-s">00</b><span>Seconds</span></div>
+    </div>
+
+    <div class="cs-ctas">
+      <a class="btn btn-gold" href="index.html">Back to the Launch Page
+        <span class="btn-disc"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </a>
+      <a class="btn btn-ghost" href="index.html#newsletter">Join the Guest List</a>
+    </div>
+
+    <p class="cs-motto">Luxury You Can Live In.</p>
+  </main>
+
+  <script>
+    const timer = document.getElementById('cd-timer');
+    const launch = new Date(timer.dataset.launch).getTime();
+    const pad = n => String(n).padStart(2, '0');
+    const tick = () => {
+      let diff = Math.max(0, launch - Date.now());
+      document.getElementById('cd-d').textContent = pad(Math.floor(diff / 864e5));
+      document.getElementById('cd-h').textContent = pad(Math.floor(diff % 864e5 / 36e5));
+      document.getElementById('cd-m').textContent = pad(Math.floor(diff % 36e5 / 6e4));
+      document.getElementById('cd-s').textContent = pad(Math.floor(diff % 6e4 / 1e3));
+    };
+    tick();
+    setInterval(tick, 1000);
+  </script>
+</body>
+</html>
