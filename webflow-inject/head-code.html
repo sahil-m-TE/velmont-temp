@@ -1,8 +1,24 @@
-<!-- VELMONT FULL SITE · Site Settings > Custom Code > Head Code
-     The door intro and other settings are controlled from site-config.json
-     in the repo, NOT here. (A window.VELMONT_CONFIG block here would
-     override the repo config; only add one if you need that.) -->
+<!-- ═══════════════════════════════════════════════════════════════
+     VELMONT FULL SITE · HEAD CODE
+     Paste this whole file into: Webflow > Site Settings > Custom Code
+     > Head Code. (The matching Footer Code is in footer-code.html,
+     both are required.)
+
+     This is the COMPLETE head code: fonts + the site stylesheet.
+     There is intentionally no config block here anymore. All settings
+     (door intro on/off etc.) are controlled by site-config.json in the
+     repo, so the site can be managed without opening Webflow.
+     ═══════════════════════════════════════════════════════════════ -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sahil-m-TE/velmont-temp@main/css/styles.css">
+
+<!-- OPTIONAL: uncomment to override the repo config from Webflow.
+     Anything set here wins over site-config.json.
+<script>
+window.VELMONT_CONFIG = {
+  doorImage: ''
+};
+</script>
+-->
