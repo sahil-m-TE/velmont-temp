@@ -18,20 +18,22 @@ jsDelivr.
 
 ## Edit workflow
 
-1. Edit `index.html`, `coming-soon.html`, `css/styles.css`, `js/script.js` or `js/door-module.js`
-2. If you touched anything except the CSS: `python3 build-webflow-bundle.py`
-3. Commit and push
-4. jsDelivr caches `@main` for ~12h: purge at https://www.jsdelivr.com/tools/purge
-   (purge both `/css/styles.css` and `/js/webflow-render.js`), or bump a `?v=N`
-   query on the two URLs in Webflow custom code
+1. Edit `index.html`, `coming-soon.html`, `css/styles.css`, `js/script.js`,
+   `js/door-module.js` or `site-config.json`
+2. Run `./deploy.sh "what changed"`. It rebuilds the bundle, commits, pushes,
+   and purges the jsDelivr cache for the changed files. Give it ~1 minute,
+   then hard-refresh the live site.
+
+Door intro on/off lives in `site-config.json` (`"doorImage": ""` disables it).
+Webflow is only needed for: page meta/SEO, slugs, domain settings, or changing
+the two custom-code snippets themselves.
 
 ## Webflow config
 
 - Both pages (Home, /coming-soon) have completely empty bodies
 - Site Settings > Custom Code: head = `webflow-inject/head-code.html`,
   footer = `webflow-inject/footer-code.html`
-- Door intro on/off: `window.VELMONT_CONFIG.doorImage` in the head snippet
-  (image URL = on, empty string = off)
+- Door intro on/off: `site-config.json` in this repo
 
 ## Placeholder data to replace before launch
 

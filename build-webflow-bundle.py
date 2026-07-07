@@ -19,6 +19,8 @@ def body_inner(path):
 main = body_inner('index.html')
 cs = body_inner('coming-soon.html')
 
+defaults = json.loads((root / 'site-config.json').read_text())
+
 # static-site links -> Webflow routes
 for a, b in [('href="coming-soon.html"', 'href="/coming-soon"'),
              ('href="index.html#', 'href="/#'),
@@ -37,6 +39,12 @@ bundle = f'''/* VELMONT INDIA · Webflow full-site bundle (GENERATED, do not edi
 var CFG = window.VELMONT_CONFIG || {{}};
 var sc = document.currentScript && document.currentScript.src || '';
 var BASE = CFG.base || sc.replace(/js\\/[^\\/]*(\\?.*)?$/, '');
+
+/* defaults from site-config.json (repo-driven); a window.VELMONT_CONFIG
+   entry in Webflow head code still overrides when present */
+var DEF = {json.dumps(defaults)};
+for(var k in DEF) if(!(k in CFG)) CFG[k] = DEF[k];
+if(CFG.doorImage && !/^https?:/.test(CFG.doorImage)) CFG.doorImage = BASE + CFG.doorImage;
 
 var MAIN = {json.dumps(main)};
 var CS = {json.dumps(cs)};
