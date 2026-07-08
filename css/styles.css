@@ -283,8 +283,14 @@ h2 { font-size: clamp(40px, 5vw, 64px); letter-spacing: .01em; }
 .cd-link span { display: inline-block; transition: transform .25s ease; }
 .cd-link:hover span { transform: translateX(5px); }
 
-/* ─────────── sections ─────────── */
-.section { padding: 110px 0; }
+/* ─────────── sections ───────────
+   the full property set is stated explicitly because the Webflow project's
+   old stylesheet also defines ".section" (height:100vh, overflow:clip,
+   width:100vw, flex): these values must win even if that sheet loads */
+.section {
+  display: block; width: auto; height: auto; min-height: 0;
+  overflow: visible; background: transparent; padding: 110px 0;
+}
 .section-ivory { background: var(--ivory); }
 
 .section-head {

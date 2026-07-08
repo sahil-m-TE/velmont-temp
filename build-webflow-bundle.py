@@ -36,6 +36,12 @@ bundle = f'''/* VELMONT INDIA · Webflow full-site bundle (GENERATED, do not edi
    edit index.html / coming-soon.html / js/script.js / js/door-module.js
    then run  python3 build-webflow-bundle.py) */
 (function(){{
+/* run-once guard: if this bundle is loaded twice (e.g. an old script tag
+   left in Webflow footer code + the new head loader), the second copy
+   must NOT inject the site again */
+if(window.__VELMONT_BOOTED__) return;
+window.__VELMONT_BOOTED__ = true;
+
 var CFG = window.VELMONT_CONFIG || {{}};
 var sc = document.currentScript && document.currentScript.src || '';
 var BASE = CFG.base || sc.replace(/js\\/[^\\/]*(\\?.*)?$/, '');
@@ -72,7 +78,19 @@ function csCountdown(){{
   tick(); setInterval(tick, 1000);
 }}
 
+function stripWebflowCss(){{
+  /* the Webflow project's own stylesheet contains the OLD design's classes
+     (e.g. ".section" with height:100vh + overflow:clip) which collide with
+     ours and clip/overlap sections. The Webflow body is empty, so its CSS
+     serves nothing: drop it entirely. */
+  var links = document.querySelectorAll('link[rel="stylesheet"]');
+  for(var i = 0; i < links.length; i++){{
+    if(/website-files\\.com/.test(links[i].href)) links[i].parentNode.removeChild(links[i]);
+  }}
+}}
+
 function boot(){{
+  stripWebflowCss();
   if(/coming-soon/.test(location.pathname)){{
     document.body.classList.add('cs-body');
     inject(CS);
