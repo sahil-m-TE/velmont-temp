@@ -20,9 +20,10 @@ jsDelivr.
 
 1. Edit `index.html`, `coming-soon.html`, `css/styles.css`, `js/script.js`,
    `js/door-module.js` or `site-config.json`
-2. Run `./deploy.sh "what changed"`. It rebuilds the bundle, commits, pushes,
-   and purges the jsDelivr cache for the changed files. Give it ~1 minute,
-   then hard-refresh the live site.
+2. Run `./deploy.sh "what changed"`. It rebuilds the bundle, commits and
+   pushes. The Webflow loader pins CSS/JS to the latest commit hash, so
+   every deploy is live for all visitors within seconds, no cache purging
+   or hard refresh needed.
 
 Door intro on/off lives in `site-config.json` (`"doorImage": ""` disables it).
 Webflow is only needed for: page meta/SEO, slugs, domain settings, or changing

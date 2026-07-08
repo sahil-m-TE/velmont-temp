@@ -1,24 +1,37 @@
 <!-- ═══════════════════════════════════════════════════════════════
-     VELMONT FULL SITE · HEAD CODE
+     VELMONT FULL SITE · HEAD CODE (complete, nothing else needed)
      Paste this whole file into: Webflow > Site Settings > Custom Code
-     > Head Code. (The matching Footer Code is in footer-code.html,
-     both are required.)
+     > Head Code, and leave the Footer Code box EMPTY (delete the old
+     script tag there, or the site will load twice).
 
-     This is the COMPLETE head code: fonts + the site stylesheet.
-     There is intentionally no config block here anymore. All settings
-     (door intro on/off etc.) are controlled by site-config.json in the
-     repo, so the site can be managed without opening Webflow.
+     How it works: it asks GitHub for the latest commit of the repo and
+     loads the CSS + JS pinned to that exact commit via jsDelivr. Pinned
+     URLs are immutable, so every deploy is visible immediately to every
+     visitor. No cache purging, no hard refresh needed, ever.
+     If the GitHub API is unreachable it falls back to @main.
+     Settings (door intro etc.) live in site-config.json in the repo.
      ═══════════════════════════════════════════════════════════════ -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sahil-m-TE/velmont-temp@main/css/styles.css">
-
-<!-- OPTIONAL: uncomment to override the repo config from Webflow.
-     Anything set here wins over site-config.json.
 <script>
-window.VELMONT_CONFIG = {
-  doorImage: ''
-};
+(function () {
+  var REPO = 'sahil-m-TE/velmont-temp';
+  function load(ref) {
+    var base = 'https://cdn.jsdelivr.net/gh/' + REPO + '@' + ref + '/';
+    var l = document.createElement('link');
+    l.rel = 'stylesheet'; l.href = base + 'css/styles.css';
+    document.head.appendChild(l);
+    var s = document.createElement('script');
+    s.src = base + 'js/webflow-render.js'; s.defer = true;
+    document.head.appendChild(s);
+  }
+  fetch('https://api.github.com/repos/' + REPO + '/commits/main', {
+    headers: { Accept: 'application/vnd.github+json' }
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (j) { load(j && j.sha ? j.sha : 'main'); })
+    .catch(function () { load('main'); });
+})();
 </script>
--->
