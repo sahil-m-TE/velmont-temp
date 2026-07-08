@@ -228,7 +228,7 @@ h2 { font-size: clamp(40px, 5vw, 64px); letter-spacing: .01em; }
   position: relative; min-height: 100svh;
   background: url("../assets/hero.jpg") center 22% / cover no-repeat #241c15;
   display: flex; align-items: flex-end;
-  border-radius: 0 0 32px 32px; overflow: hidden;
+  overflow: hidden;
 }
 .hero::after {
   content: ""; position: absolute; inset: 0;
