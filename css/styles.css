@@ -231,7 +231,8 @@ h2 { font-size: clamp(40px, 5vw, 64px); letter-spacing: .01em; }
 .drawer-cta { margin-top: 28px; }
 .drawer-cta .btn { font-size: 14px; padding: 8px 8px 8px 20px; gap: 10px; }
 .drawer-cta .btn-disc { width: 34px; height: 34px; }
-.drawer a {
+/* nav links only: the CTA in .drawer-cta keeps the shared .btn typography */
+.drawer nav a {
   font-family: var(--serif); font-size: 26px; padding: 8px 0;
   border-bottom: 1px solid rgba(240, 230, 210, .12);
 }
@@ -255,8 +256,8 @@ h2 { font-size: clamp(40px, 5vw, 64px); letter-spacing: .01em; }
 }
 .hero-eyebrow {
   font-size: 11px; letter-spacing: .34em; text-transform: uppercase;
-  color: #ecdcae; font-weight: 500; margin-bottom: 14px;
-  text-shadow: 0 2px 16px rgba(0, 0, 0, .6), 0 0 3px rgba(0, 0, 0, .4);
+  color: #f3e7c2; font-weight: 600; margin-bottom: 14px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .5), 0 2px 16px rgba(0, 0, 0, .65);
 }
 .hero h1 {
   color: #f7f2e8; font-size: clamp(64px, 10.5vw, 150px); font-weight: 500;
