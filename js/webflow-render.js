@@ -2,10 +2,14 @@
    edit index.html / coming-soon.html / js/script.js / js/door-module.js
    then run  python3 build-webflow-bundle.py) */
 (function(){
-/* run-once guard: if this bundle is loaded twice (e.g. an old script tag
-   left in Webflow footer code + the new head loader), the second copy
-   must NOT inject the site again */
-if(window.__VELMONT_BOOTED__) return;
+var BUILD_T = 1783494583;
+
+/* run-once guard: if this same-or-newer bundle already executed (e.g. an
+   old script tag left in Webflow footer code + the new head loader), the
+   second copy must NOT run again. Versioned so a NEWER bundle still runs
+   after an older one (and can replace its stale content below). */
+if(window.__VELMONT_BOOTED_T && window.__VELMONT_BOOTED_T >= BUILD_T) return;
+window.__VELMONT_BOOTED_T = BUILD_T;
 window.__VELMONT_BOOTED__ = true;
 
 var CFG = window.VELMONT_CONFIG || {};
@@ -66,13 +70,39 @@ function dedupe(){
     if(kill[i].parentNode) kill[i].parentNode.removeChild(kill[i]);
 }
 
+function teardown(){
+  /* remove a stale injected copy (markup + door + shield) so this newer
+     build can render fresh content in its place */
+  var start = document.querySelector('.announce, .cs-page');
+  if(start){
+    var n = start, kill = [];
+    while(n){ kill.push(n); n = n.nextElementSibling; }
+    for(var i = 0; i < kill.length; i++)
+      if(kill[i].parentNode) kill[i].parentNode.removeChild(kill[i]);
+  }
+  var doors = document.querySelectorAll('.vm-door');
+  for(var j = 0; j < doors.length; j++) doors[j].parentNode.removeChild(doors[j]);
+  var kids = document.body.children;
+  for(var k = kids.length - 1; k >= 0; k--){
+    var el = kids[k];
+    if(el.tagName === 'DIV' && !el.className && !el.textContent.replace(/\s/g, '') &&
+       getComputedStyle(el).position === 'fixed')
+      el.parentNode.removeChild(el);
+  }
+}
+
 function boot(){
   stripWebflowCss();
   setTimeout(dedupe, 1200); setTimeout(dedupe, 3500);
   /* if the site markup is ALREADY in the DOM, another copy of this bundle
-     (e.g. a stale browser-cached @main version from an old script tag)
-     injected it first: stand down instead of rendering a duplicate page */
-  if(document.querySelector('.announce, .cs-page')) return;
+     injected it first. If that copy came from a SAME-OR-NEWER build, stand
+     down. If it came from an OLDER build (stale browser/CDN-cached @main
+     bundle from an old script tag), tear it down and render fresh. */
+  if(document.querySelector('.announce, .cs-page')){
+    if((window.__VELMONT_BUILD_T || 0) >= BUILD_T) return;
+    teardown();
+  }
+  window.__VELMONT_BUILD_T = BUILD_T;
   if(/coming-soon/.test(location.pathname + location.search)){
     document.body.classList.add('cs-body');
     inject(CS);
