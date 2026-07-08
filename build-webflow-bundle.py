@@ -21,8 +21,11 @@ cs = body_inner('coming-soon.html')
 
 defaults = json.loads((root / 'site-config.json').read_text())
 
-# static-site links -> Webflow routes
-for a, b in [('href="coming-soon.html"', 'href="/coming-soon"'),
+# static-site links -> Webflow routes.
+# NOTE: coming-soon routes through the HOMEPAGE with a query string, because
+# the Webflow project has no /coming-soon page (a bare /coming-soon hits
+# Webflow's 404, which does not include the custom-code loader at all).
+for a, b in [('href="coming-soon.html"', 'href="/?coming-soon"'),
              ('href="index.html#', 'href="/#'),
              ('href="index.html"', 'href="/"')]:
     main = main.replace(a, b)
@@ -107,7 +110,7 @@ function boot(){{
      (e.g. a stale browser-cached @main version from an old script tag)
      injected it first: stand down instead of rendering a duplicate page */
   if(document.querySelector('.announce, .cs-page')) return;
-  if(/coming-soon/.test(location.pathname)){{
+  if(/coming-soon/.test(location.pathname + location.search)){{
     document.body.classList.add('cs-body');
     inject(CS);
     csCountdown();
