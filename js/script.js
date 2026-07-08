@@ -28,6 +28,7 @@ const drawer = document.getElementById('drawer');
 const burger = document.getElementById('burger');
 burger.addEventListener('click', () => drawer.classList.toggle('open'));
 drawer.querySelectorAll('a').forEach(a => a.addEventListener('click', () => drawer.classList.remove('open')));
+document.getElementById('drawer-close')?.addEventListener('click', () => drawer.classList.remove('open'));
 document.addEventListener('click', e => {
   if (drawer.classList.contains('open') && !drawer.contains(e.target) && !burger.contains(e.target)) {
     drawer.classList.remove('open');
