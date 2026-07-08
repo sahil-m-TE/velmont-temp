@@ -55,6 +55,7 @@ h2 { font-size: clamp(40px, 5vw, 64px); letter-spacing: .01em; }
 /* ─────────── buttons ─────────── */
 .btn {
   display: inline-flex; align-items: center; gap: 14px;
+  font-family: var(--sans);
   font-size: 15px; font-weight: 500; letter-spacing: .01em;
   padding: 10px 10px 10px 26px; border-radius: 999px;
   transition: transform .25s ease, background .25s ease, box-shadow .25s ease;
@@ -214,9 +215,12 @@ h2 { font-size: clamp(40px, 5vw, 64px); letter-spacing: .01em; }
 .drawer {
   position: fixed; top: 0; right: 0; bottom: 0; width: min(320px, 84vw); z-index: 70;
   background: var(--dark); color: #efe6d2; padding: 90px 38px;
-  transform: translateX(100%); transition: transform .4s cubic-bezier(.7,0,.3,1);
+  transform: translateX(100%);
+  box-shadow: -30px 0 80px rgba(0, 0, 0, 0), 0 0 0 100vmax rgba(22, 15, 8, 0);
+  transition: transform .4s cubic-bezier(.7,0,.3,1), box-shadow .4s ease;
 }
-.drawer.open { transform: none; box-shadow: -30px 0 80px rgba(0,0,0,.4); }
+/* the 100vmax spread doubles as a dimmed backdrop over the page */
+.drawer.open { transform: none; box-shadow: -30px 0 80px rgba(0, 0, 0, .4), 0 0 0 100vmax rgba(22, 15, 8, .5); }
 .drawer nav { display: flex; flex-direction: column; gap: 4px; }
 .drawer-close {
   position: absolute; top: 22px; right: 22px; width: 40px; height: 40px;
@@ -263,7 +267,7 @@ h2 { font-size: clamp(40px, 5vw, 64px); letter-spacing: .01em; }
   display: flex; align-items: flex-end; justify-content: space-between;
   gap: 32px; margin-top: 34px; flex-wrap: wrap;
 }
-.hero-copy { max-width: 340px; color: #ece4d4; font-size: 16.5px; font-weight: 300; text-shadow: 0 2px 14px rgba(0, 0, 0, .45); }
+.hero-copy { max-width: 340px; color: #f0e9db; font-size: 16.5px; font-weight: 300; text-shadow: 0 1px 3px rgba(0, 0, 0, .4), 0 2px 18px rgba(0, 0, 0, .6); }
 .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; }
 
 /* ─────────── countdown ─────────── */
@@ -329,7 +333,9 @@ h2 { font-size: clamp(40px, 5vw, 64px); letter-spacing: .01em; }
 .arrow:hover { background: var(--brick); border-color: var(--brick); color: #fff; }
 .arrow svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 
-.carousel-wrap { max-width: 1400px; margin: 0 auto; }
+/* full-bleed scroller: no max-width, or wide viewports clip the peek card
+   mid-page instead of at the screen edge */
+.carousel-wrap { margin: 0 auto; }
 .carousel {
   display: flex; gap: 24px; overflow-x: auto; scroll-snap-type: x mandatory;
   padding: 4px max(32px, calc((100vw - var(--wrap)) / 2)) 26px;
@@ -616,6 +622,12 @@ h2 { font-size: clamp(40px, 5vw, 64px); letter-spacing: .01em; }
   .section-head { flex-direction: column; align-items: flex-start; gap: 26px; }
   .cat-grid { grid-template-columns: 1fr 1fr; gap: 18px; }
   .coll-grid { grid-template-columns: 1fr; }
+  /* taller mobile crops push overlay text off the dark parts of the photos:
+     the scrim must protect it on its own */
+  .coll-overlay {
+    background: linear-gradient(180deg, rgba(24, 17, 11, .1) 0%, rgba(24, 17, 11, .48) 44%, rgba(24, 17, 11, .94) 100%);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, .5), 0 2px 16px rgba(0, 0, 0, .55);
+  }
   .props-grid { grid-template-columns: 1fr 1fr; gap: 34px; }
   .craft-grid { grid-template-columns: 1fr; }
   .craft-img::after { display: none; }
