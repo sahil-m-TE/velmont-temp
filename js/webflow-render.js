@@ -55,8 +55,24 @@ function stripWebflowCss(){
   }
 }
 
+function dedupe(){
+  /* self-heal: if a stale un-guarded copy of this bundle managed to inject
+     the site a second time, remove the second copy and everything after it */
+  var marks = document.querySelectorAll('.announce, .cs-page');
+  if(marks.length < 2) return;
+  var n = marks[1], kill = [];
+  while(n){ kill.push(n); n = n.nextElementSibling; }
+  for(var i = 0; i < kill.length; i++)
+    if(kill[i].parentNode) kill[i].parentNode.removeChild(kill[i]);
+}
+
 function boot(){
   stripWebflowCss();
+  setTimeout(dedupe, 1200); setTimeout(dedupe, 3500);
+  /* if the site markup is ALREADY in the DOM, another copy of this bundle
+     (e.g. a stale browser-cached @main version from an old script tag)
+     injected it first: stand down instead of rendering a duplicate page */
+  if(document.querySelector('.announce, .cs-page')) return;
   if(/coming-soon/.test(location.pathname)){
     document.body.classList.add('cs-body');
     inject(CS);
