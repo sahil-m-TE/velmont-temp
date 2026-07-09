@@ -89,6 +89,55 @@ function csCountdown(){{
   tick(); setInterval(tick, 1000);
 }}
 
+function vmEntrance(){{
+  /* the "door of light" entrance: a dark room, a glowing doorway slightly
+     ajar, wordmark + progress hairline. Built entirely with inline styles
+     so it renders correctly BEFORE the site stylesheet has loaded. */
+  var st = document.createElement('style');
+  st.id = 'vm-entr-style';
+  st.textContent = 'html.vm-entering,html.vm-entering body{{overflow:hidden!important}}';
+  document.head.appendChild(st);
+  document.documentElement.classList.add('vm-entering');
+
+  var root = document.createElement('div');
+  root.className = 'vm-door';
+  root.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:1200;background:radial-gradient(120% 90% at 50% 42%,#191108 0%,#0d0805 52%,#060302 100%)';
+
+  var scene = document.createElement('div');
+  scene.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;transform:scale(1);transform-origin:50% 44%';
+  root.appendChild(scene);
+
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:min(26vh,60vw);height:58vh;perspective:1100px';
+  scene.appendChild(wrap);
+
+  var light = document.createElement('div');
+  light.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(90deg,#f2e5cb,#fffdf4 24%,#fffef9 76%,#f2e5cb);box-shadow:0 0 42px 12px rgba(255,242,214,.5),0 0 140px 48px rgba(255,236,200,.3),0 0 340px 130px rgba(255,230,190,.17)';
+  wrap.appendChild(light);
+
+  var panel = document.createElement('div');
+  panel.style.cssText = 'position:absolute;top:-1%;left:-1%;width:102%;height:102%;transform-origin:left center;transform:rotateY(-10deg);background:linear-gradient(90deg,#0b0704,#140c06 55%,#1c1108);border-right:1px solid rgba(255,244,214,.4);box-shadow:inset -18px 0 36px rgba(0,0,0,.55)';
+  wrap.appendChild(panel);
+
+  var spill = document.createElement('div');
+  spill.style.cssText = 'position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:130vh;height:27vh;background:linear-gradient(180deg,rgba(255,240,210,.26),rgba(255,240,210,0) 82%);clip-path:polygon(46.5% 0,53.5% 0,100% 100%,0 100%);opacity:.15';
+  scene.appendChild(spill);
+
+  var brand = document.createElement('div');
+  brand.style.cssText = 'position:absolute;left:50%;top:calc(44% + 33vh);transform:translateX(-50%);text-align:center;white-space:nowrap';
+  brand.innerHTML = '<div style="font-family:\\'Cormorant Garamond\\',Georgia,serif;font-size:13px;letter-spacing:.42em;padding-left:.42em;color:#cbb27c;text-transform:uppercase">Velmont India</div>' +
+    '<div style="margin:16px auto 0;width:150px;height:1px;background:rgba(203,178,124,.22)"><div id="vm-entr-bar" style="height:100%;width:100%;background:#cbb27c;transform:scaleX(0);transform-origin:left center"></div></div>';
+  scene.appendChild(brand);
+
+  var bloom = document.createElement('div');
+  bloom.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(90% 70% at 50% 44%,#fffdf4 0%,rgba(255,250,235,.92) 45%,rgba(255,244,214,.6) 100%);opacity:0';
+  root.appendChild(bloom);
+
+  document.body.appendChild(root);
+  return {{root:root, scene:scene, panel:panel, spill:spill, bloom:bloom,
+          bar:brand.querySelector('#vm-entr-bar'), style:st}};
+}}
+
 function whenCssReady(cb){{
   /* run cb only once OUR stylesheet is actually applied: injecting markup
      before it loads flashes raw unstyled content (blue links, white bg) */
@@ -146,6 +195,9 @@ function teardown(){{
   }}
   var doors = document.querySelectorAll('.vm-door');
   for(var j = 0; j < doors.length; j++) doors[j].parentNode.removeChild(doors[j]);
+  var est = document.getElementById('vm-entr-style');
+  if(est) est.parentNode.removeChild(est);
+  document.documentElement.classList.remove('vm-entering');
   var kids = document.body.children;
   for(var k = kids.length - 1; k >= 0; k--){{
     var el = kids[k];
@@ -182,17 +234,14 @@ function boot(){{
 
   var isCS = /coming-soon/.test(location.pathname + location.search);
 
-  /* raise an opaque curtain IMMEDIATELY when the intro will play, so none
-     of the page assembly (CSS load, injection, image decode) is ever
-     visible; the door module lifts it once everything underneath is ready */
-  if(!isCS && CFG.doorImage && window.scrollY <= 2 && location.hash.length <= 1 &&
+  /* raise the entrance overlay IMMEDIATELY when the intro will play, so
+     none of the page assembly (CSS load, injection, image decode) is ever
+     visible; the entrance module drives and dismantles it */
+  var introOn = CFG.intro != null ? !!CFG.intro : !!CFG.doorImage;
+  if(!isCS && introOn && window.scrollY <= 2 && location.hash.length <= 1 &&
      !window.matchMedia('(prefers-reduced-motion: reduce)').matches){{
-    var cur = document.createElement('div');
-    cur.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:1201;background:#16100a;opacity:1';
-    document.body.appendChild(cur);
-    window.__VM_CURTAIN = cur;
-    /* warm the intro-critical images while the CSS is still loading */
-    (new Image()).src = CFG.doorImage;
+    window.__VM_ENTR = vmEntrance();
+    /* warm the hero image while the CSS is still loading */
     (new Image()).src = BASE + 'assets/hero.jpg';
   }}
 
