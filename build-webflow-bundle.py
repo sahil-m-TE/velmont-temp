@@ -61,7 +61,7 @@ var BASE = CFG.base || sc.replace(/js\\/[^\\/]*(\\?.*)?$/, '');
    entry in Webflow head code still overrides when present */
 var DEF = {json.dumps(defaults)};
 for(var k in DEF) if(!(k in CFG)) CFG[k] = DEF[k];
-if(CFG.doorImage && !/^https?:/.test(CFG.doorImage)) CFG.doorImage = BASE + CFG.doorImage;
+if(CFG.introLogo && !/^https?:/.test(CFG.introLogo)) CFG.introLogo = BASE + CFG.introLogo;
 
 var MAIN = {json.dumps(main)};
 var CS = {json.dumps(cs)};
@@ -90,44 +90,59 @@ function csCountdown(){{
 }}
 
 function vmEntrance(){{
-  /* the "light through the keyhole" entrance: dark room, keyhole filled
-     with blinding white light; the approach resolves the light into the
-     page. Built entirely with inline styles so it renders correctly
-     BEFORE the site stylesheet has loaded. */
+  /* the logo-warp entrance: white V on black -> the logo lights the wall
+     -> we fly THROUGH the logo cutout into the (bloom-hazed) page, which
+     sharpens as the warp decelerates. Built entirely with inline styles
+     so it renders correctly BEFORE the site stylesheet has loaded. */
   var st = document.createElement('style');
   st.id = 'vm-entr-style';
   st.textContent = 'html.vm-entering,html.vm-entering body{{overflow:hidden!important}}';
   document.head.appendChild(st);
   document.documentElement.classList.add('vm-entering');
 
+  var LOGO = CFG.introLogo || (BASE + 'assets/logo-v-gold.png');
+
+  /* bloom veil over the page, UNDER the wall: only ever seen through the
+     logo cutout, gives the hazy cinematic look until the final sharpen */
+  var veil = document.createElement('div');
+  veil.className = 'vm-door';
+  veil.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:1198;background:rgba(255,250,240,.1);-webkit-backdrop-filter:blur(9px) brightness(1.1);backdrop-filter:blur(9px) brightness(1.1);pointer-events:none';
+  document.body.appendChild(veil);
+
+  /* the wall: a CANVAS painted each frame (dark fill + warm glow, logo
+     hole punched via destination-out). Canvas cost is viewport-bounded at
+     ANY zoom factor: CSS masks and transform-scaled layers both hit
+     renderer rasterization limits during the warp; canvas does not */
+  var wall = document.createElement('canvas');
+  wall.className = 'vm-door';
+  wall.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:1199;background:#070402';
+  document.body.appendChild(wall);
+
+  /* foreground layer for the white logo lockup; scales only during the
+     short burn-away, so no rasterization artifacts */
   var root = document.createElement('div');
   root.className = 'vm-door';
-  root.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:1200;background:#0b0703';
+  root.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:1200;transform-origin:50% calc(42% + 15.64vmin);transform:scale(1);will-change:transform;pointer-events:none';
 
-  /* the blinding light: sits UNDER the keyhole image, so it is only
-     visible through the hole; fades away during the approach */
-  var white = document.createElement('div');
-  white.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:#fffdf6;opacity:0';
-  root.appendChild(white);
+  /* the white logo sitting exactly over the hole, with its bloom copy */
+  var logoGlow = document.createElement('img');
+  logoGlow.src = LOGO; logoGlow.alt = '';
+  logoGlow.style.cssText = 'position:absolute;left:50%;top:42%;height:34vmin;width:auto;transform:translate(-50%,-42%);filter:brightness(0) invert(1) blur(12px);opacity:0;pointer-events:none';
+  root.appendChild(logoGlow);
 
-  var door = document.createElement('img');
-  door.alt = '';
-  door.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;max-width:none;margin:0;object-fit:cover;transform-origin:50% 50%;will-change:transform,opacity;opacity:0;pointer-events:none';
-  if(CFG.doorImage) door.src = CFG.doorImage;
-  root.appendChild(door);
-
-  /* glow bleeding over the keyhole edges into the dark room */
-  var halo = document.createElement('div');
-  halo.style.cssText = 'position:absolute;left:50%;top:50%;width:130vmin;height:130vmin;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,250,236,.9) 0%,rgba(255,246,224,.32) 34%,rgba(255,242,214,0) 62%);opacity:0;pointer-events:none';
-  root.appendChild(halo);
+  var logo = document.createElement('img');
+  logo.src = LOGO; logo.alt = '';
+  logo.style.cssText = 'position:absolute;left:50%;top:42%;height:34vmin;width:auto;transform:translate(-50%,-42%);filter:brightness(0) invert(1);opacity:0;transition:opacity .7s ease;pointer-events:none';
+  root.appendChild(logo);
 
   var brand = document.createElement('div');
-  brand.style.cssText = 'position:absolute;left:50%;bottom:6vh;transform:translateX(-50%);white-space:nowrap;font-family:\\'Cormorant Garamond\\',Georgia,serif;font-size:13px;letter-spacing:.42em;padding-left:.42em;color:#cbb27c;text-transform:uppercase;opacity:0;transition:opacity .8s ease,color .5s ease';
+  brand.style.cssText = 'position:absolute;left:50%;top:calc(42% + 22vmin);transform:translateX(-50%);white-space:nowrap;font-family:\\'Cormorant Garamond\\',Georgia,serif;font-size:clamp(13px,2.4vmin,19px);letter-spacing:.42em;padding-left:.42em;color:#e8dcc2;text-transform:uppercase;opacity:0;transition:opacity .9s ease;pointer-events:none';
   brand.textContent = 'Velmont India';
   root.appendChild(brand);
 
   document.body.appendChild(root);
-  return {{root:root, white:white, door:door, halo:halo, brand:brand, style:st}};
+  return {{root:root, wall:wall, logo:logo, logoGlow:logoGlow,
+          brand:brand, veil:veil, style:st, logoUrl:LOGO, AR:682/760}};
 }}
 
 function whenCssReady(cb){{
@@ -229,7 +244,7 @@ function boot(){{
   /* raise the entrance overlay IMMEDIATELY when the intro will play, so
      none of the page assembly (CSS load, injection, image decode) is ever
      visible; the entrance module drives and dismantles it */
-  var introOn = CFG.intro != null ? !!CFG.intro : !!CFG.doorImage;
+  var introOn = CFG.intro == null || !!CFG.intro;
   if(!isCS && introOn && window.scrollY <= 2 && location.hash.length <= 1 &&
      !window.matchMedia('(prefers-reduced-motion: reduce)').matches){{
     window.__VM_ENTR = vmEntrance();
