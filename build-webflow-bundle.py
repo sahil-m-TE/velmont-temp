@@ -109,6 +109,7 @@ function dedupe(){{
   while(n){{ kill.push(n); n = n.nextElementSibling; }}
   for(var i = 0; i < kill.length; i++)
     if(kill[i].parentNode) kill[i].parentNode.removeChild(kill[i]);
+  unlockStaleDoor();
 }}
 
 function teardown(){{
@@ -130,6 +131,18 @@ function teardown(){{
        getComputedStyle(el).position === 'fixed')
       el.parentNode.removeChild(el);
   }}
+  unlockStaleDoor();
+}}
+
+function unlockStaleDoor(){{
+  /* an old scroll-driven door module may still hold its scroll lock: feed it
+     a huge synthetic wheel delta so it completes and unlocks. The event is
+     tagged __vm so THIS bundle's own intro ignores it. */
+  try{{
+    var ev = new WheelEvent('wheel', {{deltaY: 9e9, cancelable: true}});
+    ev.__vm = 1;
+    window.dispatchEvent(ev);
+  }}catch(e){{}}
 }}
 
 function boot(){{
