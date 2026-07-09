@@ -20,8 +20,10 @@
     if(h.root && h.root.parentNode) h.root.parentNode.removeChild(h.root);
     if(h.wall && h.wall.parentNode) h.wall.parentNode.removeChild(h.wall);
     if(h.veil && h.veil.parentNode) h.veil.parentNode.removeChild(h.veil);
+    if(h.bloom && h.bloom.parentNode) h.bloom.parentNode.removeChild(h.bloom);
     if(h.style && h.style.parentNode) h.style.parentNode.removeChild(h.style);
     document.documentElement.classList.remove('vm-entering');
+    document.documentElement.classList.add('vm-in');
     window.__VM_ENTR = null;
   }
 
@@ -78,22 +80,53 @@
     c.clearRect(0, 0, g.vw, g.vh);
     if(wallAlpha <= 0) return;
     c.globalAlpha = wallAlpha;
-    c.fillStyle = '#070402';
+    c.fillStyle = '#020101';
     c.fillRect(0, 0, g.vw, g.vh);
     if(glowAlpha > 0){
-      var cy = 0.42*g.vh + 0.46*(0.34*Math.min(g.vw, g.vh));
-      var r = 0.62 * Math.min(g.vw, g.vh);
-      var grad = c.createRadialGradient(g.vw/2, cy, 0, g.vw/2, cy, r);
-      grad.addColorStop(0, 'rgba(126,84,42,' + (0.62*glowAlpha) + ')');
-      grad.addColorStop(0.55, 'rgba(60,38,18,' + (0.22*glowAlpha) + ')');
+      var vmin = Math.min(g.vw, g.vh);
+      var cy = 0.42*g.vh + 0.46*(0.34*vmin);
+      var grad = c.createRadialGradient(g.vw/2, cy, 0, g.vw/2, cy, 0.66*vmin);
+      grad.addColorStop(0, 'rgba(108,70,34,' + (0.5*glowAlpha) + ')');
+      grad.addColorStop(0.55, 'rgba(48,30,14,' + (0.17*glowAlpha) + ')');
       grad.addColorStop(1, 'rgba(0,0,0,0)');
       c.fillStyle = grad;
       c.fillRect(0, 0, g.vw, g.vh);
     }
     c.globalAlpha = 1;
     c.globalCompositeOperation = 'destination-out';
+    c.imageSmoothingEnabled = true;
+    c.imageSmoothingQuality = 'high';
     c.drawImage(h.logo, g.x, g.y, g.W, g.H);
+    if(brandGeom) punchText(c, k, g);
     c.globalCompositeOperation = 'source-over';
+  }
+
+  /* the wordmark rides the zoom as a cutout too, exactly like the mark;
+     geometry is measured from the real DOM element at warp start so the
+     cutout lands exactly under the fading white text */
+  var brandGeom = null;
+  function measureBrand(){
+    var r = h.brand.getBoundingClientRect();
+    brandGeom = { top: r.top, fs: parseFloat(getComputedStyle(h.brand).fontSize) || 15 };
+  }
+  function punchText(c, k, g){
+    var fs0 = brandGeom.fs;
+    var fs = fs0 * k;
+    var H0 = 0.34 * Math.min(g.vw, g.vh);
+    var cyD = 0.42*g.vh + 0.46*H0;              /* warp origin (diamond) */
+    var y = cyD + k*(brandGeom.top - cyD);
+    if(y > g.vh + fs || y + fs*4 < 0 || fs > g.vh*4) return;
+    c.font = '500 ' + fs + 'px "Cormorant Garamond", Georgia, serif';
+    c.textBaseline = 'top';
+    c.fillStyle = '#fff';
+    var text = 'VELMONT INDIA', ls = 0.42*fs, i, wsum = 0;
+    for(i = 0; i < text.length; i++) wsum += c.measureText(text[i]).width + ls;
+    wsum -= ls;
+    var cx = g.vw/2 - wsum/2;
+    for(i = 0; i < text.length; i++){
+      if(text[i] !== ' ') c.fillText(text[i], cx, y);
+      cx += c.measureText(text[i]).width + ls;
+    }
   }
 
   /* phase 1: logo appears and lights the wall */
@@ -115,7 +148,7 @@
   capped((document.fonts && document.fonts.ready) || Promise.resolve(), 2500)
     .then(function(){ ready++; });
 
-  var t0 = performance.now(), warpT = null;
+  var t0 = performance.now(), warpT = null, vmIn = false;
 
   function smooth(x){ x = Math.max(0, Math.min(1, x)); return x*x*(3 - 2*x); }
   function quint(x){ return x < .5 ? 16*x*x*x*x*x : 1 - Math.pow(-2*x + 2, 5)/2; }
@@ -126,12 +159,15 @@
       /* waiting: the wall light fades up and the logo's bloom breathes */
       if(litT !== null){
         h.logoGlow.style.opacity = String(0.28 + 0.2*Math.sin(ts/380));
-        paintWall(1, 1, smooth((ts - litT)/1400));
+        var glowIn = smooth((ts - litT)/1400);
+        paintWall(1, 1, glowIn);
+        h.bloom.style.opacity = String(0.5*glowIn);
       }
       if((ready >= 2 && lit && el >= MIN) || el >= MAX){
         warpT = ts;
         h.logo.style.transition = 'none';
         h.brand.style.transition = 'none';
+        measureBrand();
       }
       requestAnimationFrame(frame);
       return;
@@ -150,7 +186,7 @@
       h.root.style.transform = 'scale(' + k + ')';
       h.logo.style.opacity = String(1 - burn);
       h.logoGlow.style.opacity = String(Math.max(0, 0.4*(1 - burn)));
-      h.brand.style.opacity = String(Math.max(0, 1 - smooth(p/0.2)));
+      h.brand.style.opacity = String(1 - burn);
     } else if(h.root.style.display !== 'none'){
       h.root.style.display = 'none';         /* fully burned: stop painting it */
     }
@@ -158,14 +194,17 @@
        genuinely engulfs the viewport through the diamond */
     var dissolve = smooth((p - 0.78)/0.17);
     paintWall(k, 1 - dissolve, (1 - 0.7*burn)*(1 - dissolve));
-    /* light surge through the cutout during the fast section (the bright
-       warp tunnel), resolving as the deceleration sharpens the hero */
+    /* light surge through the cutout during the fast section: the bloom
+       layer flares the hero's own highlights (film bloom, not a white wash),
+       then resolves as the deceleration sharpens the hero */
     var surge = smooth((p - 0.12)/0.22) * (1 - smooth((p - 0.6)/0.25));
-    var sharpen = smooth((p - 0.65)/0.32);   /* bloom clears, hero sharpens */
-    var bb = 'blur(' + (9*(1 - sharpen)) + 'px) brightness(' + (1.1 + 0.4*surge - 0.1*sharpen) + ')';
+    var sharpen = smooth((p - 0.65)/0.32);
+    var bb = 'blur(' + (9*(1 - sharpen)) + 'px) brightness(' + (1.04 - 0.04*sharpen) + ')';
     h.veil.style.webkitBackdropFilter = bb;
     h.veil.style.backdropFilter = bb;
-    h.veil.style.background = 'rgba(255,250,240,' + ((0.1 + 0.5*surge)*(1 - sharpen)) + ')';
+    h.bloom.style.opacity = String(Math.min(1, 0.55 + 0.55*surge)*(1 - sharpen));
+    h.bloom.style.filter = 'blur(26px) brightness(' + (1.25 + 0.55*surge) + ') saturate(1.15)';
+    if(p >= 0.6 && !vmIn){ vmIn = true; document.documentElement.classList.add('vm-in'); }
     if(p >= 0.85) document.documentElement.classList.remove('vm-entering');
     if(p >= 1){ dismantle(h); return; }
     requestAnimationFrame(frame);

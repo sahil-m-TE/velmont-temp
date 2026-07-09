@@ -100,14 +100,23 @@ function vmEntrance(){{
   document.head.appendChild(st);
   document.documentElement.classList.add('vm-entering');
 
-  var LOGO = CFG.introLogo || (BASE + 'assets/logo-v-gold.png');
+  var LOGO = CFG.introLogo || (BASE + 'assets/logo-mark.svg');
 
   /* bloom veil over the page, UNDER the wall: only ever seen through the
      logo cutout, gives the hazy cinematic look until the final sharpen */
   var veil = document.createElement('div');
   veil.className = 'vm-door';
-  veil.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:1198;background:rgba(255,250,240,.1);-webkit-backdrop-filter:blur(9px) brightness(1.1);backdrop-filter:blur(9px) brightness(1.1);pointer-events:none';
+  veil.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:1198;-webkit-backdrop-filter:blur(9px) brightness(1.04);backdrop-filter:blur(9px) brightness(1.04);pointer-events:none';
   document.body.appendChild(veil);
+
+  /* cinematic bloom: a blurred, brightened copy of the hero screen-blended
+     over the page, so light blooms out of the image's own highlights
+     instead of a flat white wash */
+  var bloom = document.createElement('img');
+  bloom.className = 'vm-door';
+  bloom.src = BASE + 'assets/hero.jpg'; bloom.alt = '';
+  bloom.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:center 22%;z-index:1197;mix-blend-mode:screen;opacity:0;filter:blur(26px) brightness(1.25) saturate(1.15);pointer-events:none';
+  document.body.appendChild(bloom);
 
   /* the wall: a CANVAS painted each frame (dark fill + warm glow, logo
      hole punched via destination-out). Canvas cost is viewport-bounded at
@@ -115,7 +124,7 @@ function vmEntrance(){{
      renderer rasterization limits during the warp; canvas does not */
   var wall = document.createElement('canvas');
   wall.className = 'vm-door';
-  wall.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:1199;background:#070402';
+  wall.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:1199;background:#020101';
   document.body.appendChild(wall);
 
   /* foreground layer for the white logo lockup; scales only during the
@@ -127,12 +136,12 @@ function vmEntrance(){{
   /* the white logo sitting exactly over the hole, with its bloom copy */
   var logoGlow = document.createElement('img');
   logoGlow.src = LOGO; logoGlow.alt = '';
-  logoGlow.style.cssText = 'position:absolute;left:50%;top:42%;height:34vmin;width:auto;transform:translate(-50%,-42%);filter:brightness(0) invert(1) blur(12px);opacity:0;pointer-events:none';
+  logoGlow.style.cssText = 'position:absolute;left:50%;top:42%;height:34vmin;width:auto;transform:translate(-50%,-42%);filter:blur(12px);opacity:0;pointer-events:none';
   root.appendChild(logoGlow);
 
   var logo = document.createElement('img');
   logo.src = LOGO; logo.alt = '';
-  logo.style.cssText = 'position:absolute;left:50%;top:42%;height:34vmin;width:auto;transform:translate(-50%,-42%);filter:brightness(0) invert(1);opacity:0;transition:opacity .7s ease;pointer-events:none';
+  logo.style.cssText = 'position:absolute;left:50%;top:42%;height:34vmin;width:auto;transform:translate(-50%,-42%);opacity:0;transition:opacity .7s ease;pointer-events:none';
   root.appendChild(logo);
 
   var brand = document.createElement('div');
@@ -141,7 +150,7 @@ function vmEntrance(){{
   root.appendChild(brand);
 
   document.body.appendChild(root);
-  return {{root:root, wall:wall, logo:logo, logoGlow:logoGlow,
+  return {{root:root, wall:wall, logo:logo, logoGlow:logoGlow, bloom:bloom,
           brand:brand, veil:veil, style:st, logoUrl:LOGO, AR:682/760}};
 }}
 
