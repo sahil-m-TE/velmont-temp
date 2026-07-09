@@ -1,19 +1,21 @@
 /* Logo-warp intro.
-   The bundle raises the overlay at boot (solid dark wall). This module
-   choreographs the user's storyboard:
-     1. white V logo + wordmark fade up on black
-     2. the logo "lights the wall": warm radial glow + breathing bloom
-        around the logo while the page loads underneath (scroll disabled,
-        html.vm-entering -> overflow hidden, no scrollbar, nothing
+   The bundle raises the overlay at boot (solid dark wall). Storyboard:
+     1. the full white lockup (V + star + wordmark, ONE vector file:
+        assets/full-logo-white.svg) fades up on pure black
+     2. the logo "lights the wall": dim warm radial + breathing bloom
+        while the page loads underneath (scroll disabled via
+        html.vm-entering -> overflow hidden: no scrollbar, nothing
         interactive)
-     3. when ready, the warp: the logo is a CUTOUT in the wall and we fly
-        through it. Zoom eased in LOG space (true warp feel: slow push,
-        explosive middle, calm deceleration). The page shows through the
-        cutout hazy under a bloom veil (backdrop blur)
-     4. as the warp decelerates the wall dissolves and the veil sharpens:
-        the hero comes into full clarity and the page becomes interactive
-   Time caps guarantee it never holds the page hostage. Skipped on
-   mid-page refreshes, section deep-links and reduced-motion. */
+     3. the warp: the lockup is a CUTOUT in the wall and we fly through
+        it, easeInOutExpo in LOG-zoom space (near-still, exponential
+        whoosh, calm halt). The page shows through the cutout under a
+        cinematic bloom (screen-blended blurred hero) and a defocus veil
+     4. as the warp decelerates the bloom resolves, the hero sharpens,
+        and the page chrome enters (nav slides down, hero copy blurs in
+        via html.vm-in)
+   The warp origin is the diamond finial at the V's tip. Time caps
+   guarantee the intro never holds the page hostage. Skipped on mid-page
+   refreshes, section deep-links and reduced-motion. */
 (function(){
   function dismantle(h){
     if(!h) return;
@@ -39,8 +41,11 @@
 
   var MIN = CFG.introMin != null ? CFG.introMin : 1600;      /* ms before warp may start */
   var MAX = CFG.introMax != null ? CFG.introMax : 4500;      /* never wait longer */
-  var WARP = CFG.introWarp != null ? CFG.introWarp : 3000;   /* ms fly-through */
-  var SMAX = 60;                                             /* final zoom: full engulf through the diamond */
+  var WARP = CFG.introWarp != null ? CFG.introWarp : 2400;   /* ms fly-through */
+  var SMAX = 60;                                             /* final zoom: through the diamond */
+  var FX = 0.5003, FY = 0.6936;   /* diamond finial as a fraction of the lockup box */
+  var H0F = 0.52;                 /* lockup height at rest, in vmin */
+  var CYF = 0.45;                 /* lockup center sits at 45% viewport height */
 
   function capped(p, ms){
     return Promise.race([p, new Promise(function(r){ setTimeout(r, ms); })]);
@@ -53,19 +58,20 @@
     }), ms);
   }
 
-  /* the hole geometry: logo height H0 = 34vmin at rest, anchored so the
-     image's (50%, 42%) point sits at container (50%, 42%); the warp
-     origin is the diamond finial = image point (50%, 88%) */
+  /* hole geometry for zoom factor k: the diamond point (FX, FY) stays
+     pinned at its rest screen position while everything grows around it */
   function geom(k){
     var vw = window.innerWidth, vh = window.innerHeight;
-    var H0 = 0.34 * Math.min(vw, vh);
-    var cy = 0.42*vh + 0.46*H0;          /* diamond's fixed screen position */
+    var H0 = H0F * Math.min(vw, vh), W0 = H0 * h.AR;
+    var cxD = vw/2 + (FX - 0.5)*W0;
+    var cyD = CYF*vh + (FY - 0.5)*H0;
     var H = H0 * k, W = H * h.AR;
-    return { W: W, H: H, x: vw/2 - 0.5*W, y: cy - 0.88*H, vw: vw, vh: vh };
+    return { W: W, H: H, x: cxD - FX*W, y: cyD - FY*H, cxD: cxD, cyD: cyD, vw: vw, vh: vh };
   }
 
   /* paint the wall for zoom factor k: dark fill + warm glow, then punch
-     the logo hole with destination-out (viewport-bounded cost at any k) */
+     the lockup hole with destination-out (viewport-bounded cost at any k;
+     the SVG re-rasterizes crisply thanks to its large intrinsic size) */
   var wctx = null, dpr = 1;
   function paintWall(k, wallAlpha, glowAlpha){
     if(!wctx){
@@ -84,8 +90,7 @@
     c.fillRect(0, 0, g.vw, g.vh);
     if(glowAlpha > 0){
       var vmin = Math.min(g.vw, g.vh);
-      var cy = 0.42*g.vh + 0.46*(0.34*vmin);
-      var grad = c.createRadialGradient(g.vw/2, cy, 0, g.vw/2, cy, 0.66*vmin);
+      var grad = c.createRadialGradient(g.vw/2, CYF*g.vh, 0, g.vw/2, CYF*g.vh, 0.72*vmin);
       grad.addColorStop(0, 'rgba(108,70,34,' + (0.5*glowAlpha) + ')');
       grad.addColorStop(0.55, 'rgba(48,30,14,' + (0.17*glowAlpha) + ')');
       grad.addColorStop(1, 'rgba(0,0,0,0)');
@@ -97,45 +102,17 @@
     c.imageSmoothingEnabled = true;
     c.imageSmoothingQuality = 'high';
     c.drawImage(h.logo, g.x, g.y, g.W, g.H);
-    if(brandGeom) punchText(c, k, g);
     c.globalCompositeOperation = 'source-over';
   }
 
-  /* the wordmark rides the zoom as a cutout too, exactly like the mark;
-     geometry is measured from the real DOM element at warp start so the
-     cutout lands exactly under the fading white text */
-  var brandGeom = null;
-  function measureBrand(){
-    var r = h.brand.getBoundingClientRect();
-    brandGeom = { top: r.top, fs: parseFloat(getComputedStyle(h.brand).fontSize) || 15 };
-  }
-  function punchText(c, k, g){
-    var fs0 = brandGeom.fs;
-    var fs = fs0 * k;
-    var H0 = 0.34 * Math.min(g.vw, g.vh);
-    var cyD = 0.42*g.vh + 0.46*H0;              /* warp origin (diamond) */
-    var y = cyD + k*(brandGeom.top - cyD);
-    if(y > g.vh + fs || y + fs*4 < 0 || fs > g.vh*4) return;
-    c.font = '500 ' + fs + 'px "Cormorant Garamond", Georgia, serif';
-    c.textBaseline = 'top';
-    c.fillStyle = '#fff';
-    var text = 'VELMONT INDIA', ls = 0.42*fs, i, wsum = 0;
-    for(i = 0; i < text.length; i++) wsum += c.measureText(text[i]).width + ls;
-    wsum -= ls;
-    var cx = g.vw/2 - wsum/2;
-    for(i = 0; i < text.length; i++){
-      if(text[i] !== ' ') c.fillText(text[i], cx, y);
-      cx += c.measureText(text[i]).width + ls;
-    }
-  }
-
-  /* phase 1: logo appears and lights the wall */
+  /* phase 1: lockup appears and lights the wall */
   var lit = false, litT = null;
   decoded(h.logo, 2500).then(function(){
     litT = performance.now();
+    var g = geom(1);
+    h.root.style.transformOrigin = g.cxD + 'px ' + g.cyD + 'px';
     paintWall(1, 1, 0);
     h.logo.style.opacity = '1';
-    h.brand.style.opacity = '1';
     setTimeout(function(){ lit = true; }, 750);
   });
 
@@ -151,12 +128,15 @@
   var t0 = performance.now(), warpT = null, vmIn = false;
 
   function smooth(x){ x = Math.max(0, Math.min(1, x)); return x*x*(3 - 2*x); }
-  function quint(x){ return x < .5 ? 16*x*x*x*x*x : 1 - Math.pow(-2*x + 2, 5)/2; }
+  function expo(x){
+    return x <= 0 ? 0 : x >= 1 ? 1 :
+      x < 0.5 ? Math.pow(2, 20*x - 10)/2 : (2 - Math.pow(2, -20*x + 10))/2;
+  }
 
   function frame(ts){
     var el = ts - t0;
     if(warpT === null){
-      /* waiting: the wall light fades up and the logo's bloom breathes */
+      /* waiting: the wall light fades up and the lockup's bloom breathes */
       if(litT !== null){
         h.logoGlow.style.opacity = String(0.28 + 0.2*Math.sin(ts/380));
         var glowIn = smooth((ts - litT)/1400);
@@ -166,27 +146,23 @@
       if((ready >= 2 && lit && el >= MIN) || el >= MAX){
         warpT = ts;
         h.logo.style.transition = 'none';
-        h.brand.style.transition = 'none';
-        measureBrand();
       }
       requestAnimationFrame(frame);
       return;
     }
-    /* the warp: fly through the logo cutout into the page.
-       g blends a gentle visible push (first 40%) with a quintic ease in
-       LOG space: slow approach, explosive middle, calm deceleration */
+    /* the warp: fly through the lockup cutout into the page.
+       easeInOutExpo applied in LOG-zoom space: near-still push, an
+       exponential whoosh through the logo, then a calm decelerated halt */
     var p = Math.min(1, (ts - warpT)/WARP);
-    var g = 0.10*smooth(p/0.40) + 0.90*quint(p);
-    var k = Math.pow(SMAX, g);
-    /* the white logo rides the zoom and dissolves into the page as the
-       acceleration kicks in (gone by ~3.5x), so the slow push is always
-       "flying into the glowing logo", never a black lull */
+    var k = Math.pow(SMAX, expo(p));
+    /* the white lockup rides the zoom and dissolves into the page as the
+       acceleration kicks in (gone by ~3.5x): the push is always "flying
+       into the glowing logo", never a black lull */
     var burn = smooth((k - 1)/2.5);
     if(burn < 1){
       h.root.style.transform = 'scale(' + k + ')';
       h.logo.style.opacity = String(1 - burn);
       h.logoGlow.style.opacity = String(Math.max(0, 0.4*(1 - burn)));
-      h.brand.style.opacity = String(1 - burn);
     } else if(h.root.style.display !== 'none'){
       h.root.style.display = 'none';         /* fully burned: stop painting it */
     }
@@ -194,10 +170,10 @@
        genuinely engulfs the viewport through the diamond */
     var dissolve = smooth((p - 0.78)/0.17);
     paintWall(k, 1 - dissolve, (1 - 0.7*burn)*(1 - dissolve));
-    /* light surge through the cutout during the fast section: the bloom
-       layer flares the hero's own highlights (film bloom, not a white wash),
-       then resolves as the deceleration sharpens the hero */
-    var surge = smooth((p - 0.12)/0.22) * (1 - smooth((p - 0.6)/0.25));
+    /* cinematic light surge: the bloom layer flares the hero's own
+       highlights during the whoosh, then resolves as the deceleration
+       sharpens the hero */
+    var surge = smooth((p - 0.18)/0.2) * (1 - smooth((p - 0.62)/0.24));
     var sharpen = smooth((p - 0.65)/0.32);
     var bb = 'blur(' + (9*(1 - sharpen)) + 'px) brightness(' + (1.04 - 0.04*sharpen) + ')';
     h.veil.style.webkitBackdropFilter = bb;

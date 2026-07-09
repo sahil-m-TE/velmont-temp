@@ -100,7 +100,7 @@ function vmEntrance(){{
   document.head.appendChild(st);
   document.documentElement.classList.add('vm-entering');
 
-  var LOGO = CFG.introLogo || (BASE + 'assets/logo-mark.svg');
+  var LOGO = CFG.introLogo || (BASE + 'assets/full-logo-white.svg');
 
   /* bloom veil over the page, UNDER the wall: only ever seen through the
      logo cutout, gives the hazy cinematic look until the final sharpen */
@@ -131,27 +131,24 @@ function vmEntrance(){{
      short burn-away, so no rasterization artifacts */
   var root = document.createElement('div');
   root.className = 'vm-door';
-  root.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:1200;transform-origin:50% calc(42% + 15.64vmin);transform:scale(1);will-change:transform;pointer-events:none';
+  root.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:1200;transform:scale(1);will-change:transform;pointer-events:none';
 
-  /* the white logo sitting exactly over the hole, with its bloom copy */
+  /* the white lockup (V + star + wordmark in ONE vector) over the hole,
+     plus its bloom copy: a single element, so the whole thing zooms and
+     burns as one and text ghosting is impossible */
   var logoGlow = document.createElement('img');
   logoGlow.src = LOGO; logoGlow.alt = '';
-  logoGlow.style.cssText = 'position:absolute;left:50%;top:42%;height:34vmin;width:auto;transform:translate(-50%,-42%);filter:blur(12px);opacity:0;pointer-events:none';
+  logoGlow.style.cssText = 'position:absolute;left:50%;top:45%;height:52vmin;width:auto;transform:translate(-50%,-50%);filter:blur(12px);opacity:0;pointer-events:none';
   root.appendChild(logoGlow);
 
   var logo = document.createElement('img');
   logo.src = LOGO; logo.alt = '';
-  logo.style.cssText = 'position:absolute;left:50%;top:42%;height:34vmin;width:auto;transform:translate(-50%,-42%);opacity:0;transition:opacity .7s ease;pointer-events:none';
+  logo.style.cssText = 'position:absolute;left:50%;top:45%;height:52vmin;width:auto;transform:translate(-50%,-50%);opacity:0;transition:opacity .7s ease;pointer-events:none';
   root.appendChild(logo);
-
-  var brand = document.createElement('div');
-  brand.style.cssText = 'position:absolute;left:50%;top:calc(42% + 22vmin);transform:translateX(-50%);white-space:nowrap;font-family:\\'Cormorant Garamond\\',Georgia,serif;font-size:clamp(13px,2.4vmin,19px);letter-spacing:.42em;padding-left:.42em;color:#e8dcc2;text-transform:uppercase;opacity:0;transition:opacity .9s ease;pointer-events:none';
-  brand.textContent = 'Velmont India';
-  root.appendChild(brand);
 
   document.body.appendChild(root);
   return {{root:root, wall:wall, logo:logo, logoGlow:logoGlow, bloom:bloom,
-          brand:brand, veil:veil, style:st, logoUrl:LOGO, AR:682/760}};
+          veil:veil, style:st, logoUrl:LOGO, AR:918/738}};
 }}
 
 function whenCssReady(cb){{
