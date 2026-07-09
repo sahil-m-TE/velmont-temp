@@ -26,6 +26,10 @@
     if(h.style && h.style.parentNode) h.style.parentNode.removeChild(h.style);
     document.documentElement.classList.remove('vm-entering');
     document.documentElement.classList.add('vm-in');
+    /* the entrance transitions are one-shot: drop the class once they have
+       played, so its slow curves never leak into scroll-driven states
+       (e.g. the announce strip lingering over the nav) */
+    setTimeout(function(){ document.documentElement.classList.remove('vm-in'); }, 2200);
     window.__VM_ENTR = null;
   }
 

@@ -5,12 +5,19 @@ const nav = document.getElementById('nav');
 const navItems = [...document.querySelectorAll('.nav-item')];
 const closeMenus = except => navItems.forEach(o => { if (o !== except) o.classList.remove('open'); });
 const announce = document.querySelector('.announce');
+/* announce strip: hidden while scrolling down, back when scrolling up or
+   at the very top; the nav always moves WITH it so they never overlap */
+let lastY = window.scrollY, stripShown = window.scrollY <= 10;
 const onScroll = () => {
-  const hid = window.scrollY > 10;
-  announce.classList.toggle('hide', hid);
-  nav.classList.toggle('up', hid);
-  nav.classList.toggle('scrolled', window.scrollY > window.innerHeight * 0.6);
+  const y = window.scrollY;
+  if (y <= 10) stripShown = true;
+  else if (y > lastY + 4) stripShown = false;
+  else if (y < lastY - 4) stripShown = true;
+  announce.classList.toggle('hide', !stripShown);
+  nav.classList.toggle('up', !stripShown);
+  nav.classList.toggle('scrolled', y > window.innerHeight * 0.6);
   closeMenus(null);
+  lastY = y;
 };
 window.addEventListener('scroll', onScroll, { passive: true });
 onScroll();
