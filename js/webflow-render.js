@@ -2,7 +2,7 @@
    edit index.html / coming-soon.html / js/script.js / js/door-module.js
    then run  python3 build-webflow-bundle.py) */
 (function(){
-var BUILD_T = 1783608742;
+var BUILD_T = 1783610022;
 
 /* run-once guard: if this same-or-newer bundle already executed (e.g. an
    old script tag left in Webflow footer code + the new head loader), the
@@ -18,7 +18,7 @@ var BASE = CFG.base || sc.replace(/js\/[^\/]*(\?.*)?$/, '');
 
 /* defaults from site-config.json (repo-driven); a window.VELMONT_CONFIG
    entry in Webflow head code still overrides when present */
-var DEF = {"intro": true};
+var DEF = {"intro": true, "doorImage": "assets/door.webp"};
 for(var k in DEF) if(!(k in CFG)) CFG[k] = DEF[k];
 if(CFG.doorImage && !/^https?:/.test(CFG.doorImage)) CFG.doorImage = BASE + CFG.doorImage;
 
@@ -49,9 +49,10 @@ function csCountdown(){
 }
 
 function vmEntrance(){
-  /* the "door of light" entrance: a dark room, a glowing doorway slightly
-     ajar, wordmark + progress hairline. Built entirely with inline styles
-     so it renders correctly BEFORE the site stylesheet has loaded. */
+  /* the "light through the keyhole" entrance: dark room, keyhole filled
+     with blinding white light; the approach resolves the light into the
+     page. Built entirely with inline styles so it renders correctly
+     BEFORE the site stylesheet has loaded. */
   var st = document.createElement('style');
   st.id = 'vm-entr-style';
   st.textContent = 'html.vm-entering,html.vm-entering body{overflow:hidden!important}';
@@ -60,41 +61,32 @@ function vmEntrance(){
 
   var root = document.createElement('div');
   root.className = 'vm-door';
-  root.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:1200;background:radial-gradient(120% 90% at 50% 42%,#191108 0%,#0d0805 52%,#060302 100%)';
+  root.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:1200;background:#0b0703';
 
-  var scene = document.createElement('div');
-  scene.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;transform:scale(1);transform-origin:50% 44%';
-  root.appendChild(scene);
+  /* the blinding light: sits UNDER the keyhole image, so it is only
+     visible through the hole; fades away during the approach */
+  var white = document.createElement('div');
+  white.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:#fffdf6;opacity:0';
+  root.appendChild(white);
 
-  var wrap = document.createElement('div');
-  wrap.style.cssText = 'position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:min(26vh,60vw);height:58vh;perspective:1100px';
-  scene.appendChild(wrap);
+  var door = document.createElement('img');
+  door.alt = '';
+  door.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;max-width:none;margin:0;object-fit:cover;transform-origin:50% 50%;will-change:transform,opacity;opacity:0;pointer-events:none';
+  if(CFG.doorImage) door.src = CFG.doorImage;
+  root.appendChild(door);
 
-  var light = document.createElement('div');
-  light.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(90deg,#f2e5cb,#fffdf4 24%,#fffef9 76%,#f2e5cb);box-shadow:0 0 42px 12px rgba(255,242,214,.5),0 0 140px 48px rgba(255,236,200,.3),0 0 340px 130px rgba(255,230,190,.17)';
-  wrap.appendChild(light);
-
-  var panel = document.createElement('div');
-  panel.style.cssText = 'position:absolute;top:-1%;left:-1%;width:102%;height:102%;transform-origin:left center;transform:rotateY(-10deg);background:linear-gradient(90deg,#0b0704,#140c06 55%,#1c1108);border-right:1px solid rgba(255,244,214,.4);box-shadow:inset -18px 0 36px rgba(0,0,0,.55)';
-  wrap.appendChild(panel);
-
-  var spill = document.createElement('div');
-  spill.style.cssText = 'position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:130vh;height:27vh;background:linear-gradient(180deg,rgba(255,240,210,.26),rgba(255,240,210,0) 82%);clip-path:polygon(46.5% 0,53.5% 0,100% 100%,0 100%);opacity:.15';
-  scene.appendChild(spill);
+  /* glow bleeding over the keyhole edges into the dark room */
+  var halo = document.createElement('div');
+  halo.style.cssText = 'position:absolute;left:50%;top:50%;width:130vmin;height:130vmin;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,250,236,.9) 0%,rgba(255,246,224,.32) 34%,rgba(255,242,214,0) 62%);opacity:0;pointer-events:none';
+  root.appendChild(halo);
 
   var brand = document.createElement('div');
-  brand.style.cssText = 'position:absolute;left:50%;top:calc(44% + 33vh);transform:translateX(-50%);text-align:center;white-space:nowrap';
-  brand.innerHTML = '<div style="font-family:\'Cormorant Garamond\',Georgia,serif;font-size:13px;letter-spacing:.42em;padding-left:.42em;color:#cbb27c;text-transform:uppercase">Velmont India</div>' +
-    '<div style="margin:16px auto 0;width:150px;height:1px;background:rgba(203,178,124,.22)"><div id="vm-entr-bar" style="height:100%;width:100%;background:#cbb27c;transform:scaleX(0);transform-origin:left center"></div></div>';
-  scene.appendChild(brand);
-
-  var bloom = document.createElement('div');
-  bloom.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(90% 70% at 50% 44%,#fffdf4 0%,rgba(255,250,235,.92) 45%,rgba(255,244,214,.6) 100%);opacity:0';
-  root.appendChild(bloom);
+  brand.style.cssText = 'position:absolute;left:50%;bottom:6vh;transform:translateX(-50%);white-space:nowrap;font-family:\'Cormorant Garamond\',Georgia,serif;font-size:13px;letter-spacing:.42em;padding-left:.42em;color:#cbb27c;text-transform:uppercase;opacity:0;transition:opacity .8s ease,color .5s ease';
+  brand.textContent = 'Velmont India';
+  root.appendChild(brand);
 
   document.body.appendChild(root);
-  return {root:root, scene:scene, panel:panel, spill:spill, bloom:bloom,
-          bar:brand.querySelector('#vm-entr-bar'), style:st};
+  return {root:root, white:white, door:door, halo:halo, brand:brand, style:st};
 }
 
 function whenCssReady(cb){
@@ -359,19 +351,21 @@ document.querySelectorAll('a[href="#"]').forEach(a =>
 
 
     /* ── door opening sequence ── */
-/* Entrance intro for the Webflow bundle: "walking in through a door".
-   The bundle raises the overlay at boot (dark room + glowing doorway ajar
-   + wordmark + gold progress hairline). This module drives it:
-     1. the door opens WITH the real loading progress (hero image, fonts),
-        so the intro visibly communicates that the page is loading
-     2. scrolling is disabled outright while it plays (html.vm-entering
-        sets overflow:hidden), so no scrollbar appears and nothing about
-        it looks interactive
-     3. when everything is ready the door swings fully open, light floods
-        the screen while the camera pushes through the doorway, and the
-        bloom fades into the finished page
-   Time caps guarantee it can never hold the page hostage. Skipped on
-   mid-page refreshes, section deep-links and reduced-motion. */
+/* Entrance intro: light through the keyhole.
+   The bundle raises the overlay at boot (dark room; the keyhole image and
+   the white light behind it fade in as soon as the keyhole image decodes,
+   so the first thing seen is BLINDING light through the hole, glow
+   bleeding into the dark, wordmark beneath). This module drives it:
+     1. while the page loads, the light simply breathes: no progress
+        widgets, nothing that looks interactive; scrolling is disabled
+        outright (html.vm-entering sets overflow:hidden -> no scrollbar)
+     2. when the page is ready (hero decoded, fonts in, time caps) the
+        camera pushes toward the keyhole; as it grows, the overexposed
+        white "adjusts" and the actual page resolves through the light,
+        like eyes adjusting when walking toward a bright window
+     3. the keyhole edges pass around the viewer and the dark surround
+        dissolves: you are inside
+   Skipped on mid-page refreshes, section deep-links and reduced-motion. */
 (function(){
   function dismantle(h){
     if(!h) return;
@@ -391,62 +385,81 @@ document.querySelectorAll('a[href="#"]').forEach(a =>
   if(!h) return;
   window.__VM_ENTR = null;    /* this module owns it from here */
 
-  var MIN = CFG.introMin != null ? CFG.introMin : 1700;   /* theatrical minimum, ms */
-  var MAX = CFG.introMax != null ? CFG.introMax : 4500;   /* never wait longer, ms */
-
-  /* ── real loading progress: base credit for boot+CSS (both already done
-        when this runs), hero image and fonts add the rest ── */
-  var target = 0.3, flooding = false;
+  var MIN = CFG.introMin != null ? CFG.introMin : 1300;        /* ms before the approach may start */
+  var MAX = CFG.introMax != null ? CFG.introMax : 4500;        /* never wait longer */
+  var APPROACH = CFG.introApproach != null ? CFG.introApproach : 2500;  /* ms push-through */
 
   function capped(p, ms){
     return Promise.race([p, new Promise(function(r){ setTimeout(r, ms); })]);
   }
+  function decoded(img, ms){
+    return capped(new Promise(function(res){
+      if(img.decode){ img.decode().then(res, res); return; }
+      if(img.complete){ res(); return; }
+      img.onload = res; img.onerror = res;
+    }), ms);
+  }
+
+  requestAnimationFrame(function(){ h.brand.style.opacity = '1'; });
+
+  /* light switches on through the hole the moment the keyhole image is
+     ready (before that the room stays dark, never a bare white screen) */
+  var lit = false;
+  decoded(h.door, 2500).then(function(){
+    h.white.style.transition = 'opacity .5s ease';
+    h.door.style.transition = 'opacity .5s ease';
+    h.white.style.opacity = '1';
+    h.door.style.opacity = '1';
+    h.brand.style.color = '#4a3a28';   /* wordmark now sits on the lit hole */
+    setTimeout(function(){
+      lit = true;
+      /* the keyhole image itself now provides the darkness; the root must
+         go transparent so the page can resolve through the hole when the
+         white light fades during the approach */
+      h.root.style.background = 'transparent';
+    }, 520);
+  });
+
+  /* page readiness: hero background + fonts, each capped */
+  var ready = 0;
   var hero = new Image();
   hero.src = (typeof BASE !== 'undefined' ? BASE : '') + 'assets/hero.jpg';
   capped(hero.decode ? hero.decode()['catch'](function(){}) : Promise.resolve(), 3500)
-    .then(function(){ target += 0.45; });
+    .then(function(){ ready++; });
   capped((document.fonts && document.fonts.ready) || Promise.resolve(), 2500)
-    .then(function(){ target += 0.25; });
+    .then(function(){ ready++; });
 
-  var disp = 0, last = null, t0 = performance.now();
+  var t0 = performance.now(), approachT = null;
+
+  function smooth(x){ x = Math.max(0, Math.min(1, x)); return x*x*(3 - 2*x); }
+  function easeInOut(x){ return x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3)/2; }
 
   function frame(ts){
-    if(flooding) return;
-    if(last === null) last = ts;
-    var dt = ts - last; last = ts;
     var el = ts - t0;
-    disp += (Math.min(target, 1) - disp) * (1 - Math.pow(0.9, dt/16.7));
-    disp += dt * 0.00004;                 /* slow drift so it never looks stuck */
-    if(el >= MAX) disp = 1;
-    if(disp > 1) disp = 1;
-    h.panel.style.transform = 'rotateY(' + (-(10 + 58*disp)) + 'deg)';
-    h.bar.style.transform = 'scaleX(' + disp + ')';
-    h.spill.style.opacity = String(0.15 + 0.5*disp);
-    if(disp >= 0.999 && el >= MIN){ flood(); return; }
+    if(approachT === null){
+      /* waiting: the light gently breathes */
+      if(lit) h.halo.style.opacity = String(0.55 + 0.18*Math.sin(ts/350));
+      if((ready >= 2 && lit && el >= MIN) || el >= MAX){
+        approachT = ts;
+        h.white.style.transition = 'none';
+        h.door.style.transition = 'none';
+        h.brand.style.opacity = '0';
+      }
+      requestAnimationFrame(frame);
+      return;
+    }
+    /* the approach: move toward the light; exposure adjusts; enter */
+    var p = Math.min(1, (ts - approachT)/APPROACH);
+    var z = easeInOut(p);
+    h.door.style.transform = 'scale(' + (1 + 5.2*z) + ')';
+    h.white.style.opacity = String(1 - smooth((p - 0.33)/0.42));
+    h.halo.style.opacity = String(Math.max(0, 0.6*(1 - smooth(p/0.3))));
+    h.door.style.opacity = String(1 - smooth((p - 0.55)/0.45));
+    if(p >= 0.8) document.documentElement.classList.remove('vm-entering');
+    if(p >= 1){ dismantle(h); return; }
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
-
-  /* ── the entrance: door swings open, light floods, camera pushes
-        through, bloom fades into the page ── */
-  function flood(){
-    if(flooding) return; flooding = true;
-    h.panel.style.transition = 'transform 620ms cubic-bezier(.6,0,.35,1)';
-    h.panel.style.transform = 'rotateY(-89deg)';
-    h.scene.style.transition = 'transform 950ms cubic-bezier(.55,0,.55,1)';
-    h.scene.style.transform = 'scale(2.35)';
-    setTimeout(function(){
-      h.bloom.style.transition = 'opacity 480ms ease';
-      h.bloom.style.opacity = '1';
-    }, 240);
-    setTimeout(function(){
-      /* scrollbar comes back behind the full-white bloom, invisibly */
-      document.documentElement.classList.remove('vm-entering');
-      h.root.style.transition = 'opacity 720ms ease';
-      h.root.style.opacity = '0';
-    }, 780);
-    setTimeout(function(){ dismantle(h); }, 1650);
-  }
 })();
 
   });

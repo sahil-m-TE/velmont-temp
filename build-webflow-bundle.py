@@ -90,9 +90,10 @@ function csCountdown(){{
 }}
 
 function vmEntrance(){{
-  /* the "door of light" entrance: a dark room, a glowing doorway slightly
-     ajar, wordmark + progress hairline. Built entirely with inline styles
-     so it renders correctly BEFORE the site stylesheet has loaded. */
+  /* the "light through the keyhole" entrance: dark room, keyhole filled
+     with blinding white light; the approach resolves the light into the
+     page. Built entirely with inline styles so it renders correctly
+     BEFORE the site stylesheet has loaded. */
   var st = document.createElement('style');
   st.id = 'vm-entr-style';
   st.textContent = 'html.vm-entering,html.vm-entering body{{overflow:hidden!important}}';
@@ -101,41 +102,32 @@ function vmEntrance(){{
 
   var root = document.createElement('div');
   root.className = 'vm-door';
-  root.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:1200;background:radial-gradient(120% 90% at 50% 42%,#191108 0%,#0d0805 52%,#060302 100%)';
+  root.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:1200;background:#0b0703';
 
-  var scene = document.createElement('div');
-  scene.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;transform:scale(1);transform-origin:50% 44%';
-  root.appendChild(scene);
+  /* the blinding light: sits UNDER the keyhole image, so it is only
+     visible through the hole; fades away during the approach */
+  var white = document.createElement('div');
+  white.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:#fffdf6;opacity:0';
+  root.appendChild(white);
 
-  var wrap = document.createElement('div');
-  wrap.style.cssText = 'position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:min(26vh,60vw);height:58vh;perspective:1100px';
-  scene.appendChild(wrap);
+  var door = document.createElement('img');
+  door.alt = '';
+  door.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;max-width:none;margin:0;object-fit:cover;transform-origin:50% 50%;will-change:transform,opacity;opacity:0;pointer-events:none';
+  if(CFG.doorImage) door.src = CFG.doorImage;
+  root.appendChild(door);
 
-  var light = document.createElement('div');
-  light.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(90deg,#f2e5cb,#fffdf4 24%,#fffef9 76%,#f2e5cb);box-shadow:0 0 42px 12px rgba(255,242,214,.5),0 0 140px 48px rgba(255,236,200,.3),0 0 340px 130px rgba(255,230,190,.17)';
-  wrap.appendChild(light);
-
-  var panel = document.createElement('div');
-  panel.style.cssText = 'position:absolute;top:-1%;left:-1%;width:102%;height:102%;transform-origin:left center;transform:rotateY(-10deg);background:linear-gradient(90deg,#0b0704,#140c06 55%,#1c1108);border-right:1px solid rgba(255,244,214,.4);box-shadow:inset -18px 0 36px rgba(0,0,0,.55)';
-  wrap.appendChild(panel);
-
-  var spill = document.createElement('div');
-  spill.style.cssText = 'position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:130vh;height:27vh;background:linear-gradient(180deg,rgba(255,240,210,.26),rgba(255,240,210,0) 82%);clip-path:polygon(46.5% 0,53.5% 0,100% 100%,0 100%);opacity:.15';
-  scene.appendChild(spill);
+  /* glow bleeding over the keyhole edges into the dark room */
+  var halo = document.createElement('div');
+  halo.style.cssText = 'position:absolute;left:50%;top:50%;width:130vmin;height:130vmin;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,250,236,.9) 0%,rgba(255,246,224,.32) 34%,rgba(255,242,214,0) 62%);opacity:0;pointer-events:none';
+  root.appendChild(halo);
 
   var brand = document.createElement('div');
-  brand.style.cssText = 'position:absolute;left:50%;top:calc(44% + 33vh);transform:translateX(-50%);text-align:center;white-space:nowrap';
-  brand.innerHTML = '<div style="font-family:\\'Cormorant Garamond\\',Georgia,serif;font-size:13px;letter-spacing:.42em;padding-left:.42em;color:#cbb27c;text-transform:uppercase">Velmont India</div>' +
-    '<div style="margin:16px auto 0;width:150px;height:1px;background:rgba(203,178,124,.22)"><div id="vm-entr-bar" style="height:100%;width:100%;background:#cbb27c;transform:scaleX(0);transform-origin:left center"></div></div>';
-  scene.appendChild(brand);
-
-  var bloom = document.createElement('div');
-  bloom.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(90% 70% at 50% 44%,#fffdf4 0%,rgba(255,250,235,.92) 45%,rgba(255,244,214,.6) 100%);opacity:0';
-  root.appendChild(bloom);
+  brand.style.cssText = 'position:absolute;left:50%;bottom:6vh;transform:translateX(-50%);white-space:nowrap;font-family:\\'Cormorant Garamond\\',Georgia,serif;font-size:13px;letter-spacing:.42em;padding-left:.42em;color:#cbb27c;text-transform:uppercase;opacity:0;transition:opacity .8s ease,color .5s ease';
+  brand.textContent = 'Velmont India';
+  root.appendChild(brand);
 
   document.body.appendChild(root);
-  return {{root:root, scene:scene, panel:panel, spill:spill, bloom:bloom,
-          bar:brand.querySelector('#vm-entr-bar'), style:st}};
+  return {{root:root, white:white, door:door, halo:halo, brand:brand, style:st}};
 }}
 
 function whenCssReady(cb){{
