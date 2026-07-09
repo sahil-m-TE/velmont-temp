@@ -143,7 +143,17 @@ h2 { font-size: clamp(40px, 5vw, 64px); letter-spacing: .01em; }
   transition: background .35s ease, color .35s ease, box-shadow .35s ease, top .35s ease;
 }
 .nav.up { top: 12px; }
-.nav-brand { font-family: var(--serif); font-weight: 600; font-size: 21px; letter-spacing: .12em; white-space: nowrap; }
+.nav-brand {
+  font-family: var(--serif); font-weight: 600; font-size: 21px;
+  letter-spacing: .12em; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 11px;
+}
+.nav-mark { height: 27px; width: auto; display: block; flex: none; }
+/* tight widths: the V mark carries the brand alone */
+@media (max-width: 1360px) {
+  .nav-brand-text { display: none; }
+  .nav-mark { height: 31px; }
+}
 .nav-links { display: flex; gap: 4px; }
 .nav-top {
   display: inline-block; padding: 9px 10px; border-radius: 999px;
