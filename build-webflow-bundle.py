@@ -89,6 +89,28 @@ function csCountdown(){{
   tick(); setInterval(tick, 1000);
 }}
 
+function whenCssReady(cb){{
+  /* run cb only once OUR stylesheet is actually applied: injecting markup
+     before it loads flashes raw unstyled content (blue links, white bg) */
+  var fired = false;
+  function fin(){{ if(fired) return; fired = true; cb(); }}
+  var link = null, ls = document.querySelectorAll('link[rel="stylesheet"]');
+  for(var i = 0; i < ls.length; i++)
+    if(/css\\/styles\\.css/.test(ls[i].href)) link = ls[i];
+  if(!link){{
+    link = document.createElement('link');
+    link.rel = 'stylesheet'; link.href = BASE + 'css/styles.css';
+    document.head.appendChild(link);
+  }}
+  if(link.sheet){{ fin(); return; }}
+  link.addEventListener('load', fin);
+  link.addEventListener('error', fin);
+  var iv = setInterval(function(){{
+    if(fired || link.sheet){{ clearInterval(iv); fin(); }}
+  }}, 40);
+  setTimeout(fin, 4000);
+}}
+
 function stripWebflowCss(){{
   /* the Webflow project's own stylesheet contains the OLD design's classes
      (e.g. ".section" with height:100vh + overflow:clip) which collide with
@@ -157,19 +179,38 @@ function boot(){{
     teardown();
   }}
   window.__VELMONT_BUILD_T = BUILD_T;
-  if(/coming-soon/.test(location.pathname + location.search)){{
-    document.body.classList.add('cs-body');
-    inject(CS);
-    csCountdown();
-    return;
-  }}
-  inject(MAIN);
 
-  /* ── page behaviors (script.js) ── */
+  var isCS = /coming-soon/.test(location.pathname + location.search);
+
+  /* raise an opaque curtain IMMEDIATELY when the intro will play, so none
+     of the page assembly (CSS load, injection, image decode) is ever
+     visible; the door module lifts it once everything underneath is ready */
+  if(!isCS && CFG.doorImage && window.scrollY <= 2 && location.hash.length <= 1 &&
+     !window.matchMedia('(prefers-reduced-motion: reduce)').matches){{
+    var cur = document.createElement('div');
+    cur.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:1201;background:#16100a;opacity:1';
+    document.body.appendChild(cur);
+    window.__VM_CURTAIN = cur;
+    /* warm the intro-critical images while the CSS is still loading */
+    (new Image()).src = CFG.doorImage;
+    (new Image()).src = BASE + 'assets/hero.jpg';
+  }}
+
+  whenCssReady(function(){{
+    if(isCS){{
+      document.body.classList.add('cs-body');
+      inject(CS);
+      csCountdown();
+      return;
+    }}
+    inject(MAIN);
+
+    /* ── page behaviors (script.js) ── */
 {behaviors}
 
-  /* ── door opening sequence ── */
+    /* ── door opening sequence ── */
 {door}
+  }});
 }}
 
 if(document.readyState === 'loading'){{ document.addEventListener('DOMContentLoaded', boot); }}
