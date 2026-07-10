@@ -76,13 +76,14 @@ function armCelebration() {
 function celebrate(bar) {
   if (celebrated) return; celebrated = true;
   const swap = () => {
+    /* the ivory wave washes the night out while the digits and the
+       welcome breathe past each other in a slow crossfade */
+    bar.classList.add('washed');
+    bar.classList.remove('night');
     timer.classList.add('cd-out');
-    setTimeout(() => {
-      timer.style.display = 'none';
-      const w = document.querySelector('.cd-welcome');
-      w.style.display = 'block';
-      requestAnimationFrame(() => requestAnimationFrame(() => w.classList.add('on')));
-    }, 460);
+    const w = document.querySelector('.cd-welcome');
+    requestAnimationFrame(() => requestAnimationFrame(() => w.classList.add('on')));
+    setTimeout(() => { timer.style.visibility = 'hidden'; }, 1250);
   };
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { swap(); return; }
   confettiBurst(bar);
@@ -135,6 +136,7 @@ function confettiBurst(anchor) {
 
 tick();
 setInterval(tick, 1000);
+document.querySelector('.countdown-bar').classList.add('night');
 if (launch <= Date.now()) armCelebration();
 
 /* ── product carousel arrows ── */
