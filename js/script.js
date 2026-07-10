@@ -56,10 +56,86 @@ const tick = () => {
   document.getElementById('cd-h').textContent = pad(h);
   document.getElementById('cd-m').textContent = pad(m);
   document.getElementById('cd-s').textContent = pad(s);
-  if (diff === 0) document.querySelector('.cd-label').textContent = 'The doors are open';
+  if (diff === 0) {
+    document.querySelector('.cd-label').textContent = 'The doors are open';
+    armCelebration();
+  }
 };
+
+/* ── launch-day celebration: once the countdown bar is 40% in view after
+   the doors open, confetti pops and the digits become a welcome ── */
+let cdArmed = false, celebrated = false;
+function armCelebration() {
+  if (cdArmed) return; cdArmed = true;
+  const bar = document.querySelector('.countdown-bar');
+  const io40 = new IntersectionObserver(es => {
+    es.forEach(e => { if (e.isIntersecting) { celebrate(bar); io40.disconnect(); } });
+  }, { threshold: 0.4 });
+  io40.observe(bar);
+}
+function celebrate(bar) {
+  if (celebrated) return; celebrated = true;
+  const swap = () => {
+    timer.classList.add('cd-out');
+    setTimeout(() => {
+      timer.style.display = 'none';
+      const w = document.querySelector('.cd-welcome');
+      w.style.display = 'block';
+      requestAnimationFrame(() => requestAnimationFrame(() => w.classList.add('on')));
+    }, 460);
+  };
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { swap(); return; }
+  confettiBurst(bar);
+  setTimeout(swap, 250);
+}
+function confettiBurst(anchor) {
+  const cv = document.createElement('canvas');
+  cv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:90';
+  document.body.appendChild(cv);
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
+  const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+  const r = anchor.getBoundingClientRect();
+  const cy = r.top + r.height / 2;
+  const colors = ['#c9a24b', '#e6c87e', '#96543f', '#f4efe7', '#2e6b4f'];
+  const parts = [];
+  const spawn = (x, y, dir, n) => {
+    for (let i = 0; i < n; i++) {
+      const a = dir + (Math.random() - 0.5) * 1.1;
+      const sp = 7 + Math.random() * 9;
+      parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
+        w: 5 + Math.random() * 6, h: 8 + Math.random() * 6,
+        rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.3,
+        c: colors[(Math.random() * colors.length) | 0],
+        life: 1, decay: 0.006 + Math.random() * 0.006 });
+    }
+  };
+  spawn(r.left + r.width * 0.12, cy, -Math.PI * 0.35, 55);
+  spawn(r.left + r.width * 0.88, cy, -Math.PI * 0.65, 55);
+  spawn(r.left + r.width * 0.5, cy, -Math.PI / 2, 45);
+  let last = performance.now();
+  const loop = ts => {
+    const dt = Math.min(32, ts - last) / 16.7; last = ts;
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    let alive = 0;
+    for (const p of parts) {
+      if (p.life <= 0) continue; alive++;
+      p.vy += 0.28 * dt; p.vx *= 0.985; p.vy *= 0.99;
+      p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt; p.life -= p.decay * dt;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.globalAlpha = Math.max(0, Math.min(1, p.life * 1.4));
+      ctx.fillStyle = p.c;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h * (0.6 + 0.4 * Math.sin(p.rot * 2)));
+      ctx.restore();
+    }
+    if (alive > 0) requestAnimationFrame(loop); else cv.remove();
+  };
+  requestAnimationFrame(loop);
+}
+
 tick();
 setInterval(tick, 1000);
+if (launch <= Date.now()) armCelebration();
 
 /* ── product carousel arrows ── */
 const carousel = document.getElementById('carousel');
