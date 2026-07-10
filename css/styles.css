@@ -323,10 +323,10 @@ h2 { font-size: clamp(40px, 5vw, 64px); letter-spacing: .01em; }
 .cd-cell { text-align: center; min-width: 62px; }
 .cd-cell b { display: block; font-family: var(--serif); font-weight: 500; font-size: 44px; line-height: 1; color: var(--heading); font-variant-numeric: tabular-nums; }
 .cd-cell span { font-size: 9.5px; letter-spacing: .26em; text-transform: uppercase; color: var(--ink-soft); }
-/* launch-day welcome: the digits scramble and decode into this */
-.cd-welcome { display: none; text-align: center; opacity: 0; transition: opacity .25s ease; min-height: 62px; }
-.cd-welcome.on { opacity: 1; }
-.cd-welcome h3 { min-height: 1.1em; }
+/* launch-day welcome: replaces the digits once the doors open */
+.cd-timer.cd-out { opacity: 0; filter: blur(8px); transform: scale(.96); transition: opacity .45s ease, filter .45s ease, transform .45s ease; }
+.cd-welcome { display: none; text-align: center; opacity: 0; filter: blur(12px); transform: translateY(8px); transition: opacity .9s ease, filter 1s ease, transform .9s ease; }
+.cd-welcome.on { opacity: 1; filter: blur(0); transform: none; }
 .cd-welcome h3 { font-family: var(--serif); font-weight: 500; font-size: clamp(30px, 3vw, 42px); line-height: 1.1; color: var(--heading); }
 .cd-welcome p { font-size: 11px; letter-spacing: .22em; text-transform: uppercase; font-weight: 600; color: var(--brick); margin-top: 8px; }
 .cd-link { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; font-weight: 600; color: var(--brick); border-bottom: 1px solid currentColor; padding-bottom: 3px; }
