@@ -39,6 +39,8 @@ behaviors = (root / 'js' / 'script.js').read_text()
 
 door = (root / 'js' / 'door-module.js').read_text()
 
+lenis = (root / 'js' / 'lenis.min.js').read_text().strip()
+
 bundle = f'''/* VELMONT INDIA · Webflow full-site bundle (GENERATED, do not edit by hand:
    edit index.html / coming-soon.html / js/script.js / js/door-module.js
    then run  python3 build-webflow-bundle.py) */
@@ -266,6 +268,9 @@ function boot(){{
       return;
     }}
     inject(MAIN);
+
+    /* ── lenis smooth scroll (vendored js/lenis.min.js) ── */
+{lenis}
 
     /* ── page behaviors (script.js) ── */
 {behaviors}

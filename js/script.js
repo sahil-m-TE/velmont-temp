@@ -225,3 +225,47 @@ document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 document.querySelectorAll('a[href="#"]').forEach(a =>
   a.addEventListener('click', e => { e.preventDefault(); showToast('Coming soon, with the full store on 10 July.'); })
 );
+
+/* ── store links are teasers until the catalogue goes live: no page
+   change, just an invitation ── */
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[href]');
+  if (!a || !a.href.includes('coming-soon')) return;
+  e.preventDefault();
+  showToast('Coming soon · contact us on WhatsApp for a demo or visit the store');
+});
+
+/* ── lenis smooth scroll: a slow luxury glide. Skipped for reduced
+   motion; parked while the intro holds the page (html.vm-entering) and
+   released the moment the warp lands ── */
+if ((typeof CFG === 'undefined' || CFG.lenis !== false) && window.Lenis &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const lenis = new Lenis({
+    duration: 1.2,
+    easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+  });
+  const raf = t => { lenis.raf(t); requestAnimationFrame(raf); };
+  requestAnimationFrame(raf);
+
+  const root = document.documentElement;
+  if (root.classList.contains('vm-entering')) {
+    lenis.stop();
+    new MutationObserver((_, mo) => {
+      if (!root.classList.contains('vm-entering')) { lenis.start(); mo.disconnect(); }
+    }).observe(root, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  /* route in-page anchors through lenis so they glide instead of relying
+     on native scroll-behavior (which lenis disables) */
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const href = a.getAttribute('href');
+    if (href === '#') return;                     /* placeholder toast links */
+    const el = document.querySelector(href);
+    if (!el && href !== '#top') return;
+    e.preventDefault();
+    lenis.scrollTo(el || 0);
+  });
+  window.__VM_LENIS = lenis;
+}
