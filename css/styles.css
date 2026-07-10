@@ -344,7 +344,10 @@ h2 { font-size: clamp(40px, 5vw, 64px); letter-spacing: .01em; }
 .countdown-bar { position: relative; overflow: hidden; }
 .countdown-bar > * { position: relative; z-index: 1; }
 .countdown-bar::before {
-  content: ''; position: absolute; inset: 0; z-index: 0;
+  /* 145% wide so the transparent tail of the wave overshoots the bar:
+     at rest (translateX(0)) the ivory 72% alone spans the full width,
+     no dark residue on the right edge */
+  content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 145%; z-index: 0;
   background: linear-gradient(100deg, var(--ivory) 72%, rgba(244, 239, 231, 0) 100%);
   transform: translateX(-108%);
 }
